@@ -22,7 +22,7 @@
 #define MOTOR_STOP {digitalWrite(IN1, LOW);digitalWrite(IN2, LOW); digitalWrite(IN3, LOW); digitalWrite(IN4, LOW);}
 
 //servo time-based control
-#define SERVO_INTERVAL 10
+#define SERVO_INTERVAL 1000
 
 //servo motors
 Servo servo1; //base of arm
@@ -57,22 +57,26 @@ char command = '\n';
 //servo1 rotation functions
 void rotate_base(int set_servo1_pos){
   bool angle_set = false;
-  while(millis()-servo1_time > SERVO_INTERVAL && !angle_set){
-    servo1_time += SERVO_INTERVAL;
-    if(set_servo1_pos > curr_servo1_pos){
-        curr_servo1_pos++;
-    } else if(set_servo1_pos < curr_servo1_pos){
-        curr_servo1_pos--;
+  servo1_time = millis();
+  while(!angle_set){
+    if(millis()-servo1_time > SERVO_INTERVAL){
+       servo1_time += SERVO_INTERVAL;
+      if(set_servo1_pos > curr_servo1_pos){
+          curr_servo1_pos++;
+          servo1.write(curr_servo1_pos);
+      } else if(set_servo1_pos < curr_servo1_pos){
+          curr_servo1_pos--;
+          servo1.write(curr_servo1_pos);
+      }
+      else {
+        angle_set = true;
+      }
     }
-    else {
-      angle_set = true;
-    }
-    servo1.write(curr_servo1_pos);
   }
 }
 
 void base_bend_90_front(){
-  rotate_base(5);
+  rotate_base(0);
 }
 
 void base_straighten(){
@@ -86,17 +90,21 @@ void base_bend_90_back(){
 //servo2 rotation functions
 void rotate_joint(int set_servo2_pos){
   bool angle_set = false;
-  while(millis()-servo2_time > SERVO_INTERVAL && !angle_set){
-    servo2_time += SERVO_INTERVAL;
-    if(set_servo2_pos > curr_servo2_pos){
-        curr_servo2_pos++;
-    } else if(set_servo2_pos < curr_servo2_pos){
-        curr_servo2_pos--;
+  servo2_time = millis();
+  while(!angle_set){
+    if(millis()-servo2_time > SERVO_INTERVAL){
+      servo2_time += SERVO_INTERVAL;
+      if(set_servo2_pos > curr_servo2_pos){
+          curr_servo2_pos++;
+          servo2.write(curr_servo2_pos);
+      } else if(set_servo2_pos < curr_servo2_pos){
+          curr_servo2_pos--;
+          servo2.write(curr_servo2_pos);
+      }
+      else {
+        angle_set = true;
+      }
     }
-    else {
-      angle_set = true;
-    }
-    servo2.write(curr_servo2_pos);
   }
 }
 
@@ -115,17 +123,21 @@ void straighten_arm(){
 //servo3 rotation functions
 void rotate_claw(int set_servo3_pos){
   bool rotated = false;
-  while(millis()-servo3_time > SERVO_INTERVAL && !rotated){
-    servo3_time += SERVO_INTERVAL;
-    if(set_servo3_pos > curr_servo3_pos){
-        curr_servo3_pos++;
-    } else if(set_servo3_pos < curr_servo3_pos){
-        curr_servo3_pos--;
+  servo3_time = millis();
+  while(!rotated){
+    if(millis()-servo3_time > SERVO_INTERVAL){
+      servo3_time += SERVO_INTERVAL;
+      if(set_servo3_pos > curr_servo3_pos){
+          curr_servo3_pos++;
+          servo3.write(curr_servo3_pos);
+      } else if(set_servo3_pos < curr_servo3_pos){
+          curr_servo3_pos--;
+          servo3.write(curr_servo3_pos);
+      }
+      else {
+        rotated = true;
+      }
     }
-    else {
-      rotated = true;
-    }
-    servo3.write(curr_servo3_pos);
   }
 }
 
@@ -140,17 +152,21 @@ void claw_horizontal(){
 //claw control functions
 void set_claw_angle(int set_servo4_pos){
   bool angle_set = false;
-  while(millis()-servo4_time > SERVO_INTERVAL && !angle_set){
-    servo4_time += SERVO_INTERVAL;
-    if(set_servo4_pos > curr_servo4_pos){
-        curr_servo4_pos++;
-    } else if(set_servo4_pos < curr_servo4_pos){
-        curr_servo4_pos--;
+  servo4_time = millis();
+  while(!angle_set){
+    if(millis()-servo4_time > SERVO_INTERVAL){
+      servo4_time += SERVO_INTERVAL;
+      if(set_servo4_pos > curr_servo4_pos){
+          curr_servo4_pos++;
+          servo4.write(curr_servo4_pos);
+      } else if(set_servo4_pos < curr_servo4_pos){
+          curr_servo4_pos--;
+          servo4.write(curr_servo4_pos);
+      }
+      else {
+        angle_set = true;
+      }
     }
-    else {
-      angle_set = true;
-    }
-    servo4.write(curr_servo4_pos);
   }
 }
 
@@ -169,59 +185,62 @@ void combined_grab(int set_servo1_pos, int set_servo2_pos, int set_servo3_pos, i
   bool servo2_angle_set = false;
   bool servo3_angle_set = false;
   bool servo4_angle_set = false;
-  while(millis()-combined_servo_time > SERVO_INTERVAL && !locked){
-    combined_servo_time += SERVO_INTERVAL;
-    if(set_servo1_pos > curr_servo1_pos && !servo1_angle_set){
-      curr_servo1_pos = curr_servo1_pos+0.1;
-      servo1.write(curr_servo1_pos);
-    }
-    else if(set_servo1_pos < curr_servo1_pos && !servo1_angle_set){
-      curr_servo1_pos = curr_servo1_pos-0.1;
-      servo1.write(curr_servo1_pos);
-    }
-    else {
-      servo1_angle_set = true;
-    }
-    
-   if(set_servo2_pos > curr_servo2_pos && !servo2_angle_set){
-      curr_servo2_pos = curr_servo2_pos+0.1;
-      servo2.write(curr_servo2_pos);
+  combined_servo_time = millis();
+  while(!locked){
+    if(millis()-combined_servo_time > SERVO_INTERVAL){
+      combined_servo_time += SERVO_INTERVAL;
+      if(set_servo1_pos > curr_servo1_pos && !servo1_angle_set){
+        curr_servo1_pos++;
+        servo1.write(curr_servo1_pos);
+      }
+      else if(set_servo1_pos < curr_servo1_pos && !servo1_angle_set){
+        curr_servo1_pos = curr_servo1_pos--;
+        servo1.write(curr_servo1_pos);
+      }
+      else {
+        servo1_angle_set = true;
+      }
+      
+     if(set_servo2_pos > curr_servo2_pos && !servo2_angle_set){
+        curr_servo2_pos = curr_servo2_pos++;
+        servo2.write(curr_servo2_pos);
+      } 
+      else if(set_servo2_pos < curr_servo2_pos && !servo2_angle_set){
+        curr_servo2_pos = curr_servo2_pos--;
+        servo2.write(curr_servo2_pos);
+      }
+      else {
+        servo2_angle_set = true;
+      }
+          
+      if(set_servo3_pos > curr_servo3_pos && !servo3_angle_set){
+        curr_servo3_pos = curr_servo3_pos++;
+        servo3.write(curr_servo3_pos);
+      }
+      else if(set_servo3_pos < curr_servo3_pos && !servo3_angle_set){
+        curr_servo3_pos = curr_servo3_pos--;
+        servo3.write(curr_servo3_pos);
+      }
+      else {
+        servo3_angle_set = true;
+      }
+      
+      if(set_servo4_pos > curr_servo4_pos && !servo4_angle_set){
+        curr_servo4_pos = curr_servo4_pos++;
+        servo4.write(curr_servo4_pos);
+      }
+      else if(set_servo4_pos < curr_servo4_pos && !servo4_angle_set){
+        curr_servo4_pos = curr_servo4_pos--;
+        servo4.write(curr_servo4_pos);
+      }
+      else {
+        servo4_angle_set = true;
+      }
+  
+      if(servo1_angle_set && servo2_angle_set && servo3_angle_set && servo4_angle_set){
+        locked = true;
+      }
     } 
-    else if(set_servo2_pos < curr_servo2_pos && !servo2_angle_set){
-      curr_servo2_pos = curr_servo2_pos-0.1;
-      servo2.write(curr_servo2_pos);
-    }
-    else {
-      servo2_angle_set = true;
-    }
-        
-    if(set_servo3_pos > curr_servo3_pos && !servo3_angle_set){
-      curr_servo3_pos = curr_servo3_pos+0.1;
-      servo3.write(curr_servo3_pos);
-    }
-    else if(set_servo3_pos < curr_servo3_pos && !servo3_angle_set){
-      curr_servo3_pos = curr_servo3_pos-0.1;
-      servo3.write(curr_servo3_pos);
-    }
-    else {
-      servo3_angle_set = true;
-    }
-    
-    if(set_servo4_pos > curr_servo4_pos && !servo4_angle_set){
-      curr_servo4_pos = curr_servo4_pos+0.1;
-      servo4.write(curr_servo4_pos);
-    }
-    else if(set_servo4_pos < curr_servo4_pos && !servo4_angle_set){
-      curr_servo4_pos = curr_servo4_pos-0.1;
-      servo4.write(curr_servo4_pos);
-    }
-    else {
-      servo4_angle_set = true;
-    }
-
-    if(servo1_angle_set && servo2_angle_set && servo3_angle_set && servo4_angle_set){
-      locked = true;
-    }
   }
 }
 
@@ -233,7 +252,7 @@ void grab_90_degree(){
 }
 
 void return_to_original(){
-  combined_grab(90, 90, -180, 20);
+  combined_grab(90, 90, 0, 20);
 }
 
 void servo1_lift_10degrees(){
@@ -241,7 +260,7 @@ void servo1_lift_10degrees(){
   Serial.println(curr_servo1_pos);
   if(curr_servo1_pos<=120){
     bool angle_set = false;
-    servo1_time = 0;
+    servo1_time = millis();
     int new_servo1_pos = curr_servo1_pos + 10;
     while(millis()-servo1_time > SERVO_INTERVAL && !angle_set){
       servo1_time += SERVO_INTERVAL;
@@ -260,7 +279,7 @@ void servo1_lift_10degrees(){
 void servo2_lift_10degrees(){
   if(curr_servo2_pos<=180){
     bool angle_set = false;
-    servo2_time = 0;
+    servo2_time = millis();
     int new_servo2_pos = curr_servo2_pos + 10;
     while(millis()-servo2_time > SERVO_INTERVAL && !angle_set){
       servo2_time += SERVO_INTERVAL;
@@ -280,7 +299,7 @@ void servo3_turn_10degrees_clockwise(){
   Serial.println(curr_servo3_pos);
   if(curr_servo3_pos<=180){
     bool angle_set = false;
-    servo1_time = 0;
+    servo3_time = millis();
     int new_servo3_pos = curr_servo3_pos + 10;
     while(millis()-servo3_time > SERVO_INTERVAL && !angle_set){
       servo3_time += SERVO_INTERVAL;
@@ -301,7 +320,7 @@ void servo1_lower_10degrees(){
   Serial.println(curr_servo1_pos);
   if(curr_servo1_pos>=0){
     bool angle_set = false;
-    servo1_time = 0;
+    servo1_time = millis();
     int new_servo1_pos = curr_servo1_pos - 10;
     while(millis()-servo1_time > SERVO_INTERVAL && !angle_set){
       servo1_time += SERVO_INTERVAL;
@@ -320,7 +339,7 @@ void servo1_lower_10degrees(){
 void servo2_lower_10degrees(){
   if(curr_servo2_pos>=0){
     bool angle_set = false;
-    servo2_time = 0;
+    servo2_time = millis();
     int new_servo2_pos = curr_servo2_pos - 10;
     while(millis()-servo2_time > SERVO_INTERVAL && !angle_set){
       servo2_time += SERVO_INTERVAL;
@@ -340,7 +359,7 @@ void servo3_turn_10degrees_anticlockwise(){
   Serial.println(curr_servo3_pos);
   if(curr_servo3_pos>=0){
     bool angle_set = false;
-    servo3_time = 0;
+    servo3_time = millis();
     int new_servo3_pos = curr_servo3_pos - 10;
     while(millis()-servo3_time > SERVO_INTERVAL && !angle_set){
       servo1_time += SERVO_INTERVAL;
