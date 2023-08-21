@@ -54,8 +54,8 @@ int combined_servo_time = 0;
 int left_motor_speed = 255;
 int right_motor_speed = 255;
 
-//Head Light Status, default 0 (OFF)
-bool led = 0;
+//Head Light Status, default 1 (ON)
+bool led = 1;
 
 //serial commands
 char command = '\n';
@@ -194,8 +194,6 @@ void claw_horizontal(){
 
 //claw control functions
 void set_claw_angle(int set_servo4_pos){
-  PrintDigits(curr_servo4_pos);
-  Serial.print("|");
   bool angle_set = false;
   servo4_time = millis();
   while(!angle_set){
@@ -207,11 +205,9 @@ void set_claw_angle(int set_servo4_pos){
       } else if(set_servo4_pos < curr_servo4_pos){
           curr_servo4_pos--;
           servo4.write(curr_servo4_pos);
-          Serial.print("=");
       }
       else {
         angle_set = true;
-        Serial.print("|");
       }
     }
   }
@@ -237,9 +233,7 @@ void combined_movement(int set_servo1_pos, int set_servo2_pos, int set_servo3_po
     switch(driving_mode)
     {
       case 0:
-        Serial.print(" STOPPED");
         MOTOR_STOP;
-        Serial.print(" ... ... OK!");
         break;
 
       case 1:
@@ -465,99 +459,91 @@ void handleCommands()
     case ' ':
       Serial.print(" STOPPED");
       MOTOR_STOP;
-      Serial.print(" ... ... OK!");
+      Serial.print(" ... ... ... ............ OK!");
       break;
 
     case 'W':
       Serial.print(" MVM FWD");
       MOTOR_GO_FORWARD;
-      Serial.print(" ... ... OK!");
+      Serial.print(" ... ... ... ............ OK!");
       break;
 
     case 'S':
       Serial.print(" MVM BKD");
       MOTOR_GO_BACKWARD;
-      Serial.print(" ... ... OK!");
+      Serial.print(" ... ... ... ............ OK!");
       break;
 
     case 'A':
       Serial.print(" MVM LFT");
       MOTOR_GO_LEFT;
-      Serial.print(" ... ... OK!");
+      Serial.print(" ... ... ... ............ OK!");
       break;
 
     case 'D':
       Serial.print(" MVM RHT");
       MOTOR_GO_RIGHT;
-      Serial.print(" ... ... OK!");
+      Serial.print(" ... ... ... ............ OK!");
       break;
 
     case 'Q':
       Serial.print(" CLW <=>");
       open_claw();
-      Serial.print(" ... ... OK!");
+      Serial.print(" ... ... ... ............ OK!");
       break;
 
     case 'E':
       Serial.print(" CLW >=<");
       close_claw();
-      Serial.print(" ... ... OK!");
+      Serial.print(" ... ... ... ............ OK!");
       break;
       
+    case '1':
+
+      break;
+    
     case '2':
-      Serial.println(" SV2 ΛΛΛ 10  DEG");
-      Serial.print("         ");
-      servo1_lower_x_degrees(2);
-      Serial.print("OK!");
+
       break;
 
     case '3':
-      Serial.println(" SV2 ΛΛΛ 10  DEG");
-      Serial.print("         ");
-      servo1_lift_x_degrees(2);
-      Serial.print("OK!");
+
       break;
 
     case '4':
-      Serial.println(" SV1 VVV 10  DEG");
-      Serial.print("         ");
+      Serial.print(" SV1 VVV 10  DEG ");
       servo1_lower_x_degrees(10);
-      Serial.print("OK!");
+      Serial.print(" OK!");
       break;
 
     case '5':
-      Serial.println(" SV2 ΛΛΛ 10  DEG");
-      Serial.print("         ");
+      Serial.print(" SV2 ΛΛΛ 10  DEG ");
       servo2_lower_x_degrees(10);
-      Serial.print("OK!");
+      Serial.print(" OK!");
       break;
 
     case '6':
-      Serial.println(" SV3 <<< 10  DEG");
-      Serial.print("         ");
+      Serial.print(" SV3 <<< 10  DEG ");
       servo3_turn_x_degrees_anticlockwise(10);
-      Serial.print("OK!");
+      Serial.print(" OK!");
       break;
 
     case '7':
-      Serial.println(" SV1 ΛΛΛ 10  DEG");
-      Serial.print("         ");
+      Serial.print(" SV1 ΛΛΛ 10  DEG ");
       servo1_lift_x_degrees(10);
-      Serial.print("OK!");
+      Serial.print(" OK!");
       break;
 
     case '8':
-      Serial.println(" SV2 ΛΛΛ 10  DEG");
-      Serial.print("         ");
+      Serial.print(" SV2 ΛΛΛ 10  DEG ");
       servo2_lift_x_degrees(10);
-      Serial.print("OK!");
+      Serial.print(" OK!");
       break;
 
     case '9':
-      Serial.println(" SV3 >>> 10  DEG");
-      Serial.print("         ");
+      Serial.print(" SV3 >>> 10  DEG ");
       servo3_turn_x_degrees_clockwise(10);
-      Serial.print("OK!");
+      Serial.print(" OK!");
       break;
 
     case 'U':
@@ -566,52 +552,33 @@ void handleCommands()
       Serial.print(" OK!");
       break;
 
-    case 'C':
-      Serial.print(" GRB");
-      grab_90_degree();
-      Serial.print(" OK!");
-      break;
-
     case 'X':
-      Serial.print(" GRB");
+      Serial.print(" RESET");
       return_to_original();
-      Serial.print(" OK!");
+      Serial.print(" . ... ... ... ...RESET!... OK!");
       break;
 
     case 'L':
       Serial.print(" LHT");
       ledStatus();
-      Serial.print(" ... ... OK!");
+      Serial.print(" ... ... ... ............ OK!");
       break;
 
     case 'B':
-      Serial.print(" PREP");
+      Serial.print(" PRP");
       enter_strike_position();
-      Serial.print(" ... ... OK!");
+      Serial.print(" ... ... ... ... ............ OK!");
       break;
 
     case 'N':
-      Serial.print(" SHOOT");
+      Serial.print(" SHT");
       strike();
-      Serial.print(" ... ... OK!");
+      Serial.print(" ... ... ... ... ............ OK!");
       break;
 
-    case 'o':
-      Serial.print(" CLAW UP");
-      claw_vertical();
-      Serial.print(" ... ... OK!");
-      break;
-
-    case 'I':
-      Serial.print(" CLAW FLAT");
-      claw_horizontal();
-      Serial.print(" ... ... OK!");
-      break;
-
-    
     default:
-    Serial.print(" ERR ERR ERR ERR ERR");
-    break;
+      Serial.print(" ERR ERR ERR ...ERROR!... ERR");
+      break;
   }
 }
 
@@ -642,17 +609,14 @@ void sendData() {
 void setup() {
   //begin serial communication with Pi
   Serial.begin(9600);
-  Serial.print("[INI] :  COM");
   
   //setup servo motors
-  Serial.print(" SVO");
   servo1.attach(SERVO1);
   servo2.attach(SERVO2);
   servo3.attach(SERVO3);
   servo4.attach(SERVO4);
 
   //setup driver motors
-  Serial.print(" MTR");
   pinMode(ENA, OUTPUT);
   pinMode(ENB, OUTPUT);
   pinMode(IN1, OUTPUT);
@@ -661,11 +625,8 @@ void setup() {
   pinMode(IN4, OUTPUT);
 
   //activate driver motors
-  Serial.print(" ACT");
   analogWrite(ENA, left_motor_speed);
   analogWrite(ENB, right_motor_speed);
- 
-  Serial.println(" OK!");
 }
 
 void loop() { 
