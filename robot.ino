@@ -25,7 +25,7 @@
 #define SERVO_INTERVAL_SLOW 30
 #define SERVO_INTERVAL_MEDIUM 15
 #define SERVO_INTERVAL_FAST 10
-#define SERVO_INTERVAL_ULTRA_FAST 0.5
+#define SERVO_INTERVAL_ULTRA_FAST 0.01
 
 //servo motors
 Servo servo1; //base of arm
@@ -245,33 +245,25 @@ void combined_movement(int set_servo1_pos, int set_servo2_pos, int set_servo3_po
       case 1:
         analogWrite(ENA, left_motor_speed);
         analogWrite(ENB, right_motor_speed);
-        Serial.print(" MVM FWD");
         MOTOR_GO_FORWARD;
-        Serial.print(" ... ... OK!");
         break;
   
       case 2:
         analogWrite(ENA, left_motor_speed);
         analogWrite(ENB, right_motor_speed);
-        Serial.print(" MVM BKD");
         MOTOR_GO_BACKWARD;
-        Serial.print(" ... ... OK!");
         break;
   
       case 3:
         analogWrite(ENA, left_motor_speed);
         analogWrite(ENB, right_motor_speed);
-        Serial.print(" MVM LFT");
         MOTOR_GO_LEFT;
-        Serial.print(" ... ... OK!");
         break;
   
       case 4:
         analogWrite(ENA, left_motor_speed);
         analogWrite(ENB, right_motor_speed);
-        Serial.print(" MVM RHT");
         MOTOR_GO_RIGHT;
-        Serial.print(" ... ... OK!");
         break;   
     }
     if(millis()-combined_servo_time > movement_interval){
@@ -356,7 +348,8 @@ void grab_90_degree_and_return(){
 }
 
 void return_to_original(){
-  combined_movement(50, 46, 90, 30, SERVO_INTERVAL_FAST, 0, 0, 0);
+//  combined_movement(50, 46, 90, 30, SERVO_INTERVAL_FAST, 0, 0, 0);
+    combined_movement(90, 90, 90, 93, SERVO_INTERVAL_FAST, 0, 0, 0);
 }
 
 void enter_strike_position(){
