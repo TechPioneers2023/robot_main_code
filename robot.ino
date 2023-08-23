@@ -1,5 +1,3 @@
-#include <MPU6050.h>
-
 #include <Wire.h>
 #include<Servo.h>
 
@@ -270,6 +268,7 @@ void combined_movement(int set_servo1_pos, int set_servo2_pos, int set_servo3_po
         analogWrite(ENB, right_motor_speed);
         curr_right_motor_speed = right_motor_speed;
         MOTOR_GO_FORWARD;
+//        Serial.print("MOVE FWD COMBINED");
         break;
   
       case 2:
@@ -278,6 +277,7 @@ void combined_movement(int set_servo1_pos, int set_servo2_pos, int set_servo3_po
         analogWrite(ENB, right_motor_speed);
         curr_right_motor_speed = right_motor_speed;
         MOTOR_GO_BACKWARD;
+//       Serial.print("MOVE BWD COMBINED");
         break;
   
       case 3:
@@ -350,10 +350,10 @@ void combined_movement(int set_servo1_pos, int set_servo2_pos, int set_servo3_po
   
       if(servo1_angle_set && servo2_angle_set && servo3_angle_set && servo4_angle_set){
         locked = true;
+        MOTOR_STOP;
       }
     } 
   }
-  MOTOR_STOP;
 }
 
 void grab_90_degree(){
@@ -386,16 +386,24 @@ void return_to_original(){
 
 void enter_strike_position(){
   combined_movement(16, 25, 180, 93, SERVO_INTERVAL_FAST, 2, 70, 70);
+  MOTOR_GO_BACKWARD;
+  delay(500);
 }
 
 void strike(){
-  combined_movement(21, 85, 180, 93, SERVO_INTERVAL_ULTRA_FAST, 1, 90, 90);
+  analogWrite(ENA, 180);
+  curr_left_motor_speed = 180;
+  analogWrite(ENB, 180);
+  curr_right_motor_speed = 180;
+  MOTOR_GO_FORWARD;
+  delay(400);
+  combined_movement(21, 85, 180, 93, SERVO_INTERVAL_FAST, 1, 180, 180);
 }
 
 void prepare_seesaw(){
   combined_movement(85, 110, 180, 93, SERVO_INTERVAL_FAST, 0, 0, 0); //lift the arm
   delay(2000);
-  combined_movement(2, 90, 180, 93, SERVO_INTERVAL_MEDIUM, 2, 50, 50); //press down the see-saw while backing slowly
+  combined_movement(2, 90, 180, 93, SERVO_INTERVAL_MEDIUM, 2, 60, 60); //press down the see-saw while backing slowly
 }
 
 //functions for micro servo movements
@@ -693,6 +701,12 @@ void handleCommands()
       return_to_original();
       Serial.print(" ... ... ... ... ............ OK!");
       break;
+
+    case 'J':
+      Serial.print(" SEE-SAW");
+      prepare_seesaw();
+      Serial.print(" ... ... ... ... ............ OK!");
+      break;         
 
     default:
       Serial.print(" ERR ERR ERR ...ERROR!... ERR");
