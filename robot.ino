@@ -1,4 +1,4 @@
-
+#include <MPU6050.h>
 
 #include <Wire.h>
 #include<Servo.h>
@@ -24,8 +24,8 @@
 #define MOTOR_GO_LEFT {digitalWrite(IN1, HIGH);digitalWrite(IN2, LOW); digitalWrite(IN3, LOW); digitalWrite(IN4, HIGH);}
 #define MOTOR_STOP {digitalWrite(IN1, LOW);digitalWrite(IN2, LOW); digitalWrite(IN3, LOW); digitalWrite(IN4, LOW);}
 
-#define MOTOR_LEFT_FAST 255
-#define MOTOR_RIGHT_FAST 255
+#define MOTOR_LEFT_FAST 240
+#define MOTOR_RIGHT_FAST 240
 #define MOTOR_LEFT_MEDIUM 150
 #define MOTOR_RIGHT_MEDIUM 150
 #define MOTOR_LEFT_SLOW 80
@@ -42,6 +42,8 @@
 
 //driver motors
 bool microControl = false;
+int curr_left_motor_speed = MOTOR_LEFT_MEDIUM;
+int curr_right_motor_speed = MOTOR_RIGHT_MEDIUM;
 
 //servo motors
 Servo servo1; //base of arm
@@ -65,6 +67,8 @@ int servo2_time = 0;
 int servo3_time = 0;
 int servo4_time = 0;
 int combined_servo_time = 0;
+
+bool claw_rotated = false;
 
 //Head Light Status, default 1 (ON)
 bool led = 1;
@@ -210,6 +214,10 @@ void claw_horizontal(){
   rotate_claw(90);
 }
 
+void rotate_claw_90_degrees(){
+  claw_rotated = 1 - claw_rotated;
+}
+
 //claw control functions
 void set_claw_angle(int set_servo4_pos){
   PrintDigits(curr_servo4_pos);
@@ -250,35 +258,44 @@ void combined_movement(int set_servo1_pos, int set_servo2_pos, int set_servo3_po
   bool servo2_angle_set = false;
   bool servo3_angle_set = false;
   bool servo4_angle_set = false;
-  switch(driving_mode){
+  switch(driving_mode)
+    {
       case 0:
         MOTOR_STOP;
         break;
-      
+
       case 1:
         analogWrite(ENA, left_motor_speed);
+        curr_left_motor_speed = left_motor_speed;
         analogWrite(ENB, right_motor_speed);
+        curr_right_motor_speed = right_motor_speed;
         MOTOR_GO_FORWARD;
         break;
   
       case 2:
         analogWrite(ENA, left_motor_speed);
+        curr_left_motor_speed = left_motor_speed;
         analogWrite(ENB, right_motor_speed);
+        curr_right_motor_speed = right_motor_speed;
         MOTOR_GO_BACKWARD;
         break;
-      
+  
       case 3:
         analogWrite(ENA, left_motor_speed);
+        curr_left_motor_speed = left_motor_speed;
         analogWrite(ENB, right_motor_speed);
+        curr_right_motor_speed = right_motor_speed;
         MOTOR_GO_LEFT;
         break;
-      
+  
       case 4:
         analogWrite(ENA, left_motor_speed);
+        curr_left_motor_speed = left_motor_speed;
         analogWrite(ENB, right_motor_speed);
+        curr_right_motor_speed = right_motor_speed;
         MOTOR_GO_RIGHT;
         break;   
-  }
+    }
   combined_servo_time = millis();
   while(!locked){
     if(millis()-combined_servo_time > movement_interval){
@@ -364,16 +381,15 @@ void grab_90_degree_and_return(){
 }
 
 void return_to_original(){
-//  combined_movement(50, 46, 90, 30, SERVO_INTERVAL_FAST, 0, 0, 0);
-    combined_movement(90, 90, 90, 93, SERVO_INTERVAL_FAST, 0, 0, 0);
+    combined_movement(90, 90, 90, 93, SERVO_INTERVAL_FAST, 0, curr_left_motor_speed, curr_right_motor_speed);
 }
 
 void enter_strike_position(){
-  combined_movement(16, 25, 180, 93, SERVO_INTERVAL_MEDIUM, 0, 0, 0);
+  combined_movement(16, 25, 180, 93, SERVO_INTERVAL_FAST, 2, 70, 70);
 }
 
 void strike(){
-  combined_movement(21, 85, 180, 93, SERVO_INTERVAL_ULTRA_FAST, 1, 100, 100);
+  combined_movement(21, 85, 180, 93, SERVO_INTERVAL_ULTRA_FAST, 1, 90, 90);
 }
 
 void prepare_seesaw(){
@@ -478,17 +494,30 @@ void switch_driving_mode(){
 
 void low_gear(){
   analogWrite(ENA, MOTOR_LEFT_SLOW);
+  curr_left_motor_speed = MOTOR_LEFT_SLOW;
   analogWrite(ENB, MOTOR_RIGHT_SLOW);
+  curr_right_motor_speed = MOTOR_RIGHT_SLOW;
 }
 
 void medium_gear(){
   analogWrite(ENA, MOTOR_LEFT_MEDIUM);
+  curr_left_motor_speed = MOTOR_LEFT_MEDIUM;
   analogWrite(ENB, MOTOR_RIGHT_MEDIUM);
+  curr_right_motor_speed = MOTOR_RIGHT_MEDIUM;
 }
 
 void high_gear(){
   analogWrite(ENA, MOTOR_LEFT_FAST);
+  curr_left_motor_speed = MOTOR_LEFT_FAST;
   analogWrite(ENB, MOTOR_RIGHT_FAST);
+  curr_right_motor_speed = MOTOR_RIGHT_FAST;
+}
+
+void emergency_restore(){
+  return_to_original();
+  MOTOR_STOP;
+  microControl = false;
+  high_gear();
 }
 
 /*  Handle incomming commands and do respective actions
@@ -625,7 +654,7 @@ void handleCommands()
 
     case 'X':
       Serial.print(" RESET");
-      return_to_original();
+      emergency_restore();
       Serial.print(" . ... ... ... ...RESET!... OK!");
       break;
 
@@ -644,6 +673,24 @@ void handleCommands()
     case 'N':
       Serial.print(" SHT");
       strike();
+      Serial.print(" ... ... ... ... ............ OK!");
+      break;
+
+    case 'R':
+      Serial.print(" TURN CLAW");
+      rotate_claw_90_degrees();
+      if(claw_rotated){
+        claw_vertical();
+      }
+      else {
+        claw_horizontal();
+      }
+      Serial.print(" ... ... ... ... ............ OK!");
+      break;
+
+    case 'H':
+      Serial.print(" ARM RETURN");
+      return_to_original();
       Serial.print(" ... ... ... ... ............ OK!");
       break;
 
@@ -683,14 +730,17 @@ void setup() {
   
   //begin serial communication with Pi
   Serial.begin(9600);
+  Serial.print("[INI] :  COM");
   
   //setup servo motors
+  Serial.print(" SVO");
   servo1.attach(SERVO1);
   servo2.attach(SERVO2);
   servo3.attach(SERVO3);
   servo4.attach(SERVO4);
 
   //setup driver motors
+  Serial.print(" MTR");
   pinMode(ENA, OUTPUT);
   pinMode(ENB, OUTPUT);
   pinMode(IN1, OUTPUT);
@@ -702,6 +752,7 @@ void setup() {
   pinMode(LED, OUTPUT);
 
   //activate driver motors
+  Serial.print(" ACT");
   analogWrite(ENA, MOTOR_LEFT_MEDIUM);
   analogWrite(ENB, MOTOR_RIGHT_MEDIUM);
 //
