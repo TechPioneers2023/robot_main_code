@@ -1,4 +1,4 @@
-#include <MPU6050.h>
+
 
 #include <Wire.h>
 #include<Servo.h>
@@ -250,40 +250,37 @@ void combined_movement(int set_servo1_pos, int set_servo2_pos, int set_servo3_po
   bool servo2_angle_set = false;
   bool servo3_angle_set = false;
   bool servo4_angle_set = false;
-  combined_servo_time = millis();
-  while(!locked){
-    switch(driving_mode)
-    {
+  switch(driving_mode){
       case 0:
-        Serial.print(" STOPPED");
         MOTOR_STOP;
-        Serial.print(" ... ... OK!");
         break;
-
+      
       case 1:
-        analogWrite(ENA, MOTOR_LEFT_SLOW);
-        analogWrite(ENB, MOTOR_RIGHT_SLOW);
+        analogWrite(ENA, left_motor_speed);
+        analogWrite(ENB, right_motor_speed);
         MOTOR_GO_FORWARD;
         break;
   
       case 2:
-        analogWrite(ENA, MOTOR_LEFT_SLOW);
-        analogWrite(ENB, MOTOR_RIGHT_SLOW);
+        analogWrite(ENA, left_motor_speed);
+        analogWrite(ENB, right_motor_speed);
         MOTOR_GO_BACKWARD;
         break;
-  
+      
       case 3:
-        analogWrite(ENA, MOTOR_LEFT_SLOW);
-        analogWrite(ENB, MOTOR_RIGHT_SLOW);
+        analogWrite(ENA, left_motor_speed);
+        analogWrite(ENB, right_motor_speed);
         MOTOR_GO_LEFT;
         break;
-  
+      
       case 4:
-        analogWrite(ENA, MOTOR_LEFT_SLOW);
-        analogWrite(ENB, MOTOR_RIGHT_SLOW);
+        analogWrite(ENA, left_motor_speed);
+        analogWrite(ENB, right_motor_speed);
         MOTOR_GO_RIGHT;
         break;   
-    }
+  }
+  combined_servo_time = millis();
+  while(!locked){
     if(millis()-combined_servo_time > movement_interval){
       combined_servo_time += movement_interval;
       if(set_servo1_pos > curr_servo1_pos && !servo1_angle_set){
@@ -339,6 +336,7 @@ void combined_movement(int set_servo1_pos, int set_servo2_pos, int set_servo3_po
       }
     } 
   }
+  MOTOR_STOP;
 }
 
 void grab_90_degree(){
@@ -685,17 +683,14 @@ void setup() {
   
   //begin serial communication with Pi
   Serial.begin(9600);
-  Serial.print("[INI] :  COM");
   
   //setup servo motors
-  Serial.print(" SVO");
   servo1.attach(SERVO1);
   servo2.attach(SERVO2);
   servo3.attach(SERVO3);
   servo4.attach(SERVO4);
 
   //setup driver motors
-  Serial.print(" MTR");
   pinMode(ENA, OUTPUT);
   pinMode(ENB, OUTPUT);
   pinMode(IN1, OUTPUT);
@@ -707,7 +702,6 @@ void setup() {
   pinMode(LED, OUTPUT);
 
   //activate driver motors
-  Serial.print(" ACT");
   analogWrite(ENA, MOTOR_LEFT_MEDIUM);
   analogWrite(ENB, MOTOR_RIGHT_MEDIUM);
 //
