@@ -1,3 +1,6 @@
+#include <MPU6050.h>
+
+#include <Wire.h>
 #include<Servo.h>
 
 //servo mappings
@@ -26,6 +29,9 @@
 #define SERVO_INTERVAL_MEDIUM 15
 #define SERVO_INTERVAL_FAST 10
 #define SERVO_INTERVAL_ULTRA_FAST 0.01
+
+//LED
+#define LED A0
 
 //servo motors
 Servo servo1; //base of arm
@@ -60,6 +66,12 @@ bool led = 1;
 //serial commands
 char command = '\n';
 String  cmd;
+
+//gyroscope
+//MPU6050 gyroscope;
+//int16_t ax, ay, az;
+//int16_t gx, gy, gz;
+//bool gyroscope_connected = false;
 
 void PrintDigits(int digits)
 {
@@ -194,6 +206,8 @@ void claw_horizontal(){
 
 //claw control functions
 void set_claw_angle(int set_servo4_pos){
+  PrintDigits(curr_servo4_pos);
+  Serial.print("|");
   bool angle_set = false;
   servo4_time = millis();
   while(!angle_set){
@@ -205,9 +219,11 @@ void set_claw_angle(int set_servo4_pos){
       } else if(set_servo4_pos < curr_servo4_pos){
           curr_servo4_pos--;
           servo4.write(curr_servo4_pos);
+          Serial.print("=");
       }
       else {
         angle_set = true;
+        Serial.print("|");
       }
     }
   }
@@ -233,7 +249,9 @@ void combined_movement(int set_servo1_pos, int set_servo2_pos, int set_servo3_po
     switch(driving_mode)
     {
       case 0:
+        Serial.print(" STOPPED");
         MOTOR_STOP;
+        Serial.print(" ... ... OK!");
         break;
 
       case 1:
@@ -439,11 +457,13 @@ void ledStatus()
   if (led == 0)
   {
     led = 1;
+    digitalWrite(LED, led);
     Serial.print(" ON ");
   }
     else
   {
     led = 0;
+    digitalWrite(LED, led);
     Serial.print(" OFF");
   }
 }
@@ -607,16 +627,22 @@ void sendData() {
 }
 
 void setup() {
+  // join I2C bus
+  Wire.begin(); 
+  
   //begin serial communication with Pi
   Serial.begin(9600);
+  Serial.print("[INI] :  COM");
   
   //setup servo motors
+  Serial.print(" SVO");
   servo1.attach(SERVO1);
   servo2.attach(SERVO2);
   servo3.attach(SERVO3);
   servo4.attach(SERVO4);
 
   //setup driver motors
+  Serial.print(" MTR");
   pinMode(ENA, OUTPUT);
   pinMode(ENB, OUTPUT);
   pinMode(IN1, OUTPUT);
@@ -624,9 +650,21 @@ void setup() {
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
 
+  //setup LED
+  pinMode(LED, OUTPUT);
+
   //activate driver motors
+  Serial.print(" ACT");
   analogWrite(ENA, left_motor_speed);
   analogWrite(ENB, right_motor_speed);
+//
+//  // initialize device Serial.println("Initializing I2C devices..."); 
+//  gyroscope.initialize();
+//  // verify connection Serial.println("Testing device connections..."); 
+//  gyroscope_connected = gyroscope.testConnection();
+//  Serial.println( gyroscope_connected ? "GYRO CONNECTED" : "GYRO CONNECT FAIL");
+// 
+//  Serial.println(" OK!");
 }
 
 void loop() { 
@@ -636,5 +674,15 @@ void loop() {
       handleCommands();
       Serial.println(" >>");
   }
-  delay(200);
+//  if (gyroscope_connected) {
+//    gyroscope.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+//    Serial.print("ax: "); Serial.print(ax);Serial.print(" ");
+//    Serial.print("ay: "); Serial.print(ay);Serial.print(" ");
+//    Serial.print("az: "); Serial.print(az);Serial.print(" ");
+//    Serial.print("gx: "); Serial.print(gx);Serial.print(" ");
+//    Serial.print("gy: "); Serial.print(gy);Serial.print(" ");
+//    Serial.print("gz: ");Serial.print(gz);Serial.println(" ");
+//    
+//  }
+//  delay(3000);
 }
