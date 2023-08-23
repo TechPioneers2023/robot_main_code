@@ -19,10 +19,17 @@
 
 //driver motor movements
 #define MOTOR_GO_BACKWARD {digitalWrite(IN1, LOW);digitalWrite(IN2, HIGH); digitalWrite(IN3, LOW); digitalWrite(IN4, HIGH);}
-#define DMOTOR_GO_FORWARD {digitalWrite(IN1, HIGH);digitalWrite(IN2, LOW); digitalWrite(IN3, HIGH); digitalWrite(IN4, LOW);}
+#define MOTOR_GO_FORWARD {digitalWrite(IN1, HIGH);digitalWrite(IN2, LOW); digitalWrite(IN3, HIGH); digitalWrite(IN4, LOW);}
 #define MOTOR_GO_RIGHT {digitalWrite(IN1, LOW);digitalWrite(IN2, HIGH); digitalWrite(IN3, HIGH); digitalWrite(IN4, LOW);}
 #define MOTOR_GO_LEFT {digitalWrite(IN1, HIGH);digitalWrite(IN2, LOW); digitalWrite(IN3, LOW); digitalWrite(IN4, HIGH);}
 #define MOTOR_STOP {digitalWrite(IN1, LOW);digitalWrite(IN2, LOW); digitalWrite(IN3, LOW); digitalWrite(IN4, LOW);}
+
+#define MOTOR_LEFT_FAST 255
+#define MOTOR_RIGHT_FAST 255
+#define MOTOR_LEFT_MEDIUM 150
+#define MOTOR_RIGHT_MEDIUM 150
+#define MOTOR_LEFT_SLOW 80
+#define MOTOR_RIGHT_SLOW 80
 
 //servo time-based control
 #define SERVO_INTERVAL_SLOW 30
@@ -32,6 +39,9 @@
 
 //LED
 #define LED A0
+
+//driver motors
+bool microControl = false;
 
 //servo motors
 Servo servo1; //base of arm
@@ -55,10 +65,6 @@ int servo2_time = 0;
 int servo3_time = 0;
 int servo4_time = 0;
 int combined_servo_time = 0;
-
-//driver motor speed
-int left_motor_speed = 255;
-int right_motor_speed = 255;
 
 //Head Light Status, default 1 (ON)
 bool led = 1;
@@ -255,26 +261,26 @@ void combined_movement(int set_servo1_pos, int set_servo2_pos, int set_servo3_po
         break;
 
       case 1:
-        analogWrite(ENA, left_motor_speed);
-        analogWrite(ENB, right_motor_speed);
+        analogWrite(ENA, MOTOR_LEFT_SLOW);
+        analogWrite(ENB, MOTOR_RIGHT_SLOW);
         MOTOR_GO_FORWARD;
         break;
   
       case 2:
-        analogWrite(ENA, left_motor_speed);
-        analogWrite(ENB, right_motor_speed);
+        analogWrite(ENA, MOTOR_LEFT_SLOW);
+        analogWrite(ENB, MOTOR_RIGHT_SLOW);
         MOTOR_GO_BACKWARD;
         break;
   
       case 3:
-        analogWrite(ENA, left_motor_speed);
-        analogWrite(ENB, right_motor_speed);
+        analogWrite(ENA, MOTOR_LEFT_SLOW);
+        analogWrite(ENB, MOTOR_RIGHT_SLOW);
         MOTOR_GO_LEFT;
         break;
   
       case 4:
-        analogWrite(ENA, left_motor_speed);
-        analogWrite(ENB, right_motor_speed);
+        analogWrite(ENA, MOTOR_LEFT_SLOW);
+        analogWrite(ENB, MOTOR_RIGHT_SLOW);
         MOTOR_GO_RIGHT;
         break;   
     }
@@ -468,6 +474,25 @@ void ledStatus()
   }
 }
 
+void switch_driving_mode(){
+  microControl = 1 - microControl;
+}
+
+void low_gear(){
+  analogWrite(ENA, MOTOR_LEFT_SLOW);
+  analogWrite(ENB, MOTOR_RIGHT_SLOW);
+}
+
+void medium_gear(){
+  analogWrite(ENA, MOTOR_LEFT_MEDIUM);
+  analogWrite(ENB, MOTOR_RIGHT_MEDIUM);
+}
+
+void high_gear(){
+  analogWrite(ENA, MOTOR_LEFT_FAST);
+  analogWrite(ENB, MOTOR_RIGHT_FAST);
+}
+
 /*  Handle incomming commands and do respective actions
  *  
  */
@@ -484,25 +509,53 @@ void handleCommands()
 
     case 'W':
       Serial.print(" MVM FWD");
-      MOTOR_GO_FORWARD;
+      if(microControl){
+        MOTOR_GO_FORWARD;
+        delay(100);
+        MOTOR_STOP;
+      }
+      else{
+        MOTOR_GO_FORWARD;
+      }
       Serial.print(" ... ... ... ............ OK!");
       break;
 
     case 'S':
       Serial.print(" MVM BKD");
-      MOTOR_GO_BACKWARD;
+      if(microControl){
+        MOTOR_GO_BACKWARD;
+        delay(100);
+        MOTOR_STOP;
+      }
+      else{
+        MOTOR_GO_BACKWARD;
+      }
       Serial.print(" ... ... ... ............ OK!");
       break;
 
     case 'A':
       Serial.print(" MVM LFT");
-      MOTOR_GO_LEFT;
+      if(microControl){
+        MOTOR_GO_LEFT;
+        delay(100);
+        MOTOR_STOP;
+      }
+      else{
+        MOTOR_GO_LEFT;
+      }
       Serial.print(" ... ... ... ............ OK!");
       break;
 
     case 'D':
       Serial.print(" MVM RHT");
-      MOTOR_GO_RIGHT;
+      if(microControl){
+        MOTOR_GO_RIGHT;
+        delay(100);
+        MOTOR_STOP;
+      }
+      else{
+        MOTOR_GO_RIGHT;
+      }
       Serial.print(" ... ... ... ............ OK!");
       break;
 
@@ -519,15 +572,15 @@ void handleCommands()
       break;
       
     case '1':
-
+      switch_driving_mode();
       break;
     
     case '2':
-
+      medium_gear();
       break;
 
     case '3':
-
+      high_gear();
       break;
 
     case '4':
@@ -655,8 +708,8 @@ void setup() {
 
   //activate driver motors
   Serial.print(" ACT");
-  analogWrite(ENA, left_motor_speed);
-  analogWrite(ENB, right_motor_speed);
+  analogWrite(ENA, MOTOR_LEFT_MEDIUM);
+  analogWrite(ENB, MOTOR_RIGHT_MEDIUM);
 //
 //  // initialize device Serial.println("Initializing I2C devices..."); 
 //  gyroscope.initialize();
