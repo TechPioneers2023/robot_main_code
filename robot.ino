@@ -18,10 +18,10 @@
 #define IN4 13  
 
 //driver motor movements
-#define MOTOR_GO_FORWARD {digitalWrite(IN1, LOW);digitalWrite(IN2, HIGH); digitalWrite(IN3, LOW); digitalWrite(IN4, HIGH);}
-#define MOTOR_GO_BACKWARD {digitalWrite(IN1, HIGH);digitalWrite(IN2, LOW); digitalWrite(IN3, HIGH); digitalWrite(IN4, LOW);}
-#define MOTOR_GO_LEFT {digitalWrite(IN1, LOW);digitalWrite(IN2, HIGH); digitalWrite(IN3, HIGH); digitalWrite(IN4, LOW);}
-#define MOTOR_GO_RIGHT {digitalWrite(IN1, HIGH);digitalWrite(IN2, LOW); digitalWrite(IN3, LOW); digitalWrite(IN4, HIGH);}
+#define MOTOR_GO_BACKWARD {digitalWrite(IN1, LOW);digitalWrite(IN2, HIGH); digitalWrite(IN3, LOW); digitalWrite(IN4, HIGH);}
+#define DMOTOR_GO_FORWARD {digitalWrite(IN1, HIGH);digitalWrite(IN2, LOW); digitalWrite(IN3, HIGH); digitalWrite(IN4, LOW);}
+#define MOTOR_GO_RIGHT {digitalWrite(IN1, LOW);digitalWrite(IN2, HIGH); digitalWrite(IN3, HIGH); digitalWrite(IN4, LOW);}
+#define MOTOR_GO_LEFT {digitalWrite(IN1, HIGH);digitalWrite(IN2, LOW); digitalWrite(IN3, LOW); digitalWrite(IN4, HIGH);}
 #define MOTOR_STOP {digitalWrite(IN1, LOW);digitalWrite(IN2, LOW); digitalWrite(IN3, LOW); digitalWrite(IN4, LOW);}
 
 //servo time-based control
