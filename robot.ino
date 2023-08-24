@@ -1,5 +1,5 @@
 #include <Wire.h>
-#include<Servo.h>
+#include <Servo.h>
 
 //servo mappings
 #define SERVO1 11                
@@ -288,7 +288,7 @@ void combined_movement(int set_servo1_pos, int set_servo2_pos, int set_servo3_po
     }
   combined_servo_time = millis();
   while(!locked){
-    delay(10);
+    delay(5);
     if(millis()-combined_servo_time > movement_interval){
       combined_servo_time += movement_interval;
       if(set_servo1_pos > curr_servo1_pos && !servo1_angle_set){
@@ -376,7 +376,7 @@ void return_to_original(){
 }
 
 void enter_strike_position(){
-  combined_movement(16, 25, 180, 93, SERVO_INTERVAL_FAST, 2, 70, 70);
+  combined_movement(16, 25, 180, 93, SERVO_INTERVAL_FAST, 2, 110, 110);
   MOTOR_GO_BACKWARD;
   delay(500);
   MOTOR_STOP;
@@ -389,7 +389,7 @@ void strike(){
   curr_right_motor_speed = 180;
   MOTOR_GO_FORWARD;
   delay(400);
-  combined_movement(21, 85, 180, 93, SERVO_INTERVAL_FAST, 1, 180, 180);
+  combined_movement(21, 85, 180, 93, SERVO_INTERVAL_ULTRA_FAST, 1, 180, 180);
 }
 
 void prepare_seesaw(){
@@ -601,7 +601,7 @@ void handleCommands()
     case '1':
       Serial.print(" SWT MOD");
       switch_driving_mode();
-      Serial.print(" ... ... ... ...... OK!");
+      Serial.print(" ... ... ... ... ...... OK!");
       break;
     
     case '2':
@@ -742,17 +742,14 @@ void setup() {
   
   //begin serial communication with Pi
   Serial.begin(9600);
-  Serial.print("[INI] :  COM");
   
   //setup servo motors
-  Serial.print(" SVO");
   servo1.attach(SERVO1);
   servo2.attach(SERVO2);
   servo3.attach(SERVO3);
   servo4.attach(SERVO4);
 
   //setup driver motors
-  Serial.print(" MTR");
   pinMode(ENA, OUTPUT);
   pinMode(ENB, OUTPUT);
   pinMode(IN1, OUTPUT);
@@ -764,7 +761,6 @@ void setup() {
   pinMode(LED, OUTPUT);
 
   //activate driver motors
-  Serial.print(" ACT");
   analogWrite(ENA, MOTOR_LEFT_MEDIUM);
   analogWrite(ENB, MOTOR_RIGHT_MEDIUM);
 //
@@ -774,7 +770,6 @@ void setup() {
 //  gyroscope_connected = gyroscope.testConnection();
 //  Serial.println( gyroscope_connected ? "GYRO CONNECTED" : "GYRO CONNECT FAIL");
 // 
-  Serial.println(" OK!");
 }
 
 void loop() { 
