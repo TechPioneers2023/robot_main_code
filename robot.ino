@@ -181,8 +181,6 @@ void straighten_arm(){
 
 //servo3 rotation functions
 void rotate_claw(int set_servo3_pos){
-  PrintDigits(curr_servo3_pos);
-  Serial.print("|");
   bool rotated = false;
   servo3_time = millis();
   while(!rotated){
@@ -194,11 +192,9 @@ void rotate_claw(int set_servo3_pos){
       } else if(set_servo3_pos < curr_servo3_pos){
           curr_servo3_pos--;
           servo3.write(curr_servo3_pos);
-          Serial.print("=");
       }
       else {
         rotated = true;
-        Serial.print("|");
       }
     }
   }
@@ -218,8 +214,6 @@ void rotate_claw_90_degrees(){
 
 //claw control functions
 void set_claw_angle(int set_servo4_pos){
-  PrintDigits(curr_servo4_pos);
-  Serial.print("|");
   bool angle_set = false;
   servo4_time = millis();
   while(!angle_set){
@@ -231,11 +225,9 @@ void set_claw_angle(int set_servo4_pos){
       } else if(set_servo4_pos < curr_servo4_pos){
           curr_servo4_pos--;
           servo4.write(curr_servo4_pos);
-          Serial.print("=");
       }
       else {
         angle_set = true;
-        Serial.print("|");
       }
     }
   }
@@ -607,15 +599,21 @@ void handleCommands()
       break;
       
     case '1':
+      Serial.print(" SWT MOD");
       switch_driving_mode();
+      Serial.print(" ... ... ... ...... OK!");
       break;
     
     case '2':
+      Serial.print(" SPD MID");
       medium_gear();
+      Serial.print(" ... ... ... ............ OK!");
       break;
 
     case '3':
+      Serial.print(" SPD TOP");
       high_gear();
+      Serial.print(" ... ... ... ............ OK!");
       break;
 
     case '4':
@@ -657,7 +655,7 @@ void handleCommands()
     case 'U':
       Serial.print(" GRB & RETURN");
       grab_90_degree_and_return();
-      Serial.print(" OK!");
+      Serial.print(" ... ... ........... OK!");
       break;
 
     case 'X':
@@ -693,19 +691,19 @@ void handleCommands()
       else {
         claw_horizontal();
       }
-      Serial.print(" ... ... ... ... ............ OK!");
+      Serial.print(" ... ... ... .......... OK!");
       break;
 
     case 'H':
       Serial.print(" ARM RETURN");
       return_to_original();
-      Serial.print(" ... ... ... ... ............ OK!");
+      Serial.print(" ... ... ............. OK!");
       break;
 
     case 'J':
       Serial.print(" SEE-SAW");
       prepare_seesaw();
-      Serial.print(" ... ... ... ... ............ OK!");
+      Serial.print(" ... ... ... ............ OK!");
       break;         
 
     default:
@@ -776,7 +774,7 @@ void setup() {
 //  gyroscope_connected = gyroscope.testConnection();
 //  Serial.println( gyroscope_connected ? "GYRO CONNECTED" : "GYRO CONNECT FAIL");
 // 
-//  Serial.println(" OK!");
+  Serial.println(" OK!");
 }
 
 void loop() { 
