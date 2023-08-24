@@ -268,7 +268,6 @@ void combined_movement(int set_servo1_pos, int set_servo2_pos, int set_servo3_po
         analogWrite(ENB, right_motor_speed);
         curr_right_motor_speed = right_motor_speed;
         MOTOR_GO_FORWARD;
-//        Serial.print("MOVE FWD COMBINED");
         break;
   
       case 2:
@@ -277,7 +276,6 @@ void combined_movement(int set_servo1_pos, int set_servo2_pos, int set_servo3_po
         analogWrite(ENB, right_motor_speed);
         curr_right_motor_speed = right_motor_speed;
         MOTOR_GO_BACKWARD;
-//       Serial.print("MOVE BWD COMBINED");
         break;
   
       case 3:
@@ -298,6 +296,7 @@ void combined_movement(int set_servo1_pos, int set_servo2_pos, int set_servo3_po
     }
   combined_servo_time = millis();
   while(!locked){
+    delay(10);
     if(millis()-combined_servo_time > movement_interval){
       combined_servo_time += movement_interval;
       if(set_servo1_pos > curr_servo1_pos && !servo1_angle_set){
@@ -388,6 +387,7 @@ void enter_strike_position(){
   combined_movement(16, 25, 180, 93, SERVO_INTERVAL_FAST, 2, 70, 70);
   MOTOR_GO_BACKWARD;
   delay(500);
+  MOTOR_STOP;
 }
 
 void strike(){
