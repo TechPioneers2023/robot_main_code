@@ -22,8 +22,8 @@
 #define MOTOR_GO_LEFT {digitalWrite(IN1, HIGH);digitalWrite(IN2, LOW); digitalWrite(IN3, LOW); digitalWrite(IN4, HIGH);}
 #define MOTOR_STOP {digitalWrite(IN1, LOW);digitalWrite(IN2, LOW); digitalWrite(IN3, LOW); digitalWrite(IN4, LOW);}
 
-#define MOTOR_LEFT_FAST 240
-#define MOTOR_RIGHT_FAST 240
+#define MOTOR_LEFT_FAST 250
+#define MOTOR_RIGHT_FAST 250
 #define MOTOR_LEFT_MEDIUM 150
 #define MOTOR_RIGHT_MEDIUM 150
 #define MOTOR_LEFT_SLOW 80
@@ -347,6 +347,69 @@ void combined_movement(int set_servo1_pos, int set_servo2_pos, int set_servo3_po
   }
 }
 
+void rapid_servo_movement(int set_servo1_pos, int set_servo2_pos, int set_servo3_pos, int set_servo4_pos){
+  bool locked = false;
+  bool servo1_angle_set = false;
+  bool servo2_angle_set = false;
+  bool servo3_angle_set = false;
+  bool servo4_angle_set = false;
+
+  while(!locked){
+      if(set_servo1_pos > curr_servo1_pos && !servo1_angle_set){
+        curr_servo1_pos++;
+        servo1.write(curr_servo1_pos);
+      }
+      else if(set_servo1_pos < curr_servo1_pos && !servo1_angle_set){
+        curr_servo1_pos--;
+        servo1.write(curr_servo1_pos);
+      }
+      else {
+        servo1_angle_set = true;
+      }
+      
+     if(set_servo2_pos > curr_servo2_pos && !servo2_angle_set){
+        curr_servo2_pos++;
+        servo2.write(curr_servo2_pos);
+      } 
+      else if(set_servo2_pos < curr_servo2_pos && !servo2_angle_set){
+        curr_servo2_pos--;
+        servo2.write(curr_servo2_pos);
+      }
+      else {
+        servo2_angle_set = true;
+      }
+          
+      if(set_servo3_pos > curr_servo3_pos && !servo3_angle_set){
+        curr_servo3_pos++;
+        servo3.write(curr_servo3_pos);
+      }
+      else if(set_servo3_pos < curr_servo3_pos && !servo3_angle_set){
+        curr_servo3_pos--;
+        servo3.write(curr_servo3_pos);
+      }
+      else {
+        servo3_angle_set = true;
+      }
+      
+      if(set_servo4_pos > curr_servo4_pos && !servo4_angle_set){
+        curr_servo4_pos++;
+        servo4.write(curr_servo4_pos);
+      }
+      else if(set_servo4_pos < curr_servo4_pos && !servo4_angle_set){
+        curr_servo4_pos--;
+        servo4.write(curr_servo4_pos);
+      }
+      else {
+        servo4_angle_set = true;
+      }
+  
+      if(servo1_angle_set && servo2_angle_set && servo3_angle_set && servo4_angle_set){
+        locked = true;
+        MOTOR_STOP;
+      }
+  } 
+}
+
 void grab_90_degree(){
   combined_movement(2, 90, 90, 30, SERVO_INTERVAL_MEDIUM, 0, 0, 0 );
 }
@@ -376,20 +439,11 @@ void return_to_original(){
 }
 
 void enter_strike_position(){
-  combined_movement(16, 25, 180, 93, SERVO_INTERVAL_FAST, 2, 110, 110);
-  MOTOR_GO_BACKWARD;
-  delay(500);
-  MOTOR_STOP;
+  combined_movement(5, 30, 0, 93, SERVO_INTERVAL_ULTRA_FAST, 0, 0, 0);
 }
 
 void strike(){
-  analogWrite(ENA, 180);
-  curr_left_motor_speed = 180;
-  analogWrite(ENB, 180);
-  curr_right_motor_speed = 180;
-  MOTOR_GO_FORWARD;
-  delay(400);
-  combined_movement(21, 85, 180, 93, SERVO_INTERVAL_ULTRA_FAST, 1, 180, 180);
+  rapid_servo_movement(30, 75, 0, 30);
 }
 
 void prepare_seesaw(){
@@ -518,6 +572,18 @@ void emergency_restore(){
   MOTOR_STOP;
   microControl = false;
   high_gear();
+}
+
+void left_90_degrees(){
+  MOTOR_GO_LEFT;
+  delay(800);
+  MOTOR_STOP;
+}
+
+void right_90_degrees(){
+  MOTOR_GO_RIGHT;
+  delay(800);
+  MOTOR_STOP;
 }
 
 /*  Handle incomming commands and do respective actions
@@ -665,8 +731,14 @@ void handleCommands()
       break;
 
     case 'L':
-      Serial.print(" LHT");
-      ledStatus();
+      Serial.print(" LEFT");
+      left_90_degrees();
+      Serial.print(" ... ... ... ............ OK!");
+      break;
+
+    case 'K':
+      Serial.print(" RIGHT");
+      right_90_degrees();
       Serial.print(" ... ... ... ............ OK!");
       break;
 
